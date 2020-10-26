@@ -1,8 +1,8 @@
 export class ShowMtxFormat {
-    private _mtx: [][];
+    private _mtx: Array<string[]>;
     private _blank: string;
-    constructor(mtx: [][], blankSpace?: string) {
-        this._mtx = mtx;
+    constructor(mtx?: Array<string[]>, blankSpace?: string) {
+        this._mtx = mtx ?? new Array<string[]>();
         this._blank = blankSpace ?? "_";
     }
 
@@ -28,10 +28,20 @@ export class ShowMtxFormat {
     }
 
     public print(): void {
-        console.clear();
         const mtx = this.sanitization();
         for (let i = 0; i < this._mtx.length; i++) {
             console.log(...mtx[i])
+        }
+    }
+
+    public insertStringOnProcessPos(idProcess: number, step: number, word: string): void {
+        if (idProcess)
+            this._mtx[idProcess - 1][step] = word;
+    }
+
+    public initialize(amountOfProcess: number): void {
+        for (let i = 0; i < amountOfProcess; i++) {
+            this._mtx.push([]);
         }
     }
 }

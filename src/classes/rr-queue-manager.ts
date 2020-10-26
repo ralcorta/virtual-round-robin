@@ -1,20 +1,64 @@
 import { Queue } from "./queue";
 import { Thread } from "./thread";
 
-export class RrQueuesCollection<T extends Thread>  {
+export class RrQueuesManager<T extends Thread>  {
+    /** QUEUES */
+
+    /**
+     * Ready queue: Where process wait for be processed
+     */
     private _ready: Queue<T>;
+
+    /**
+     * Aux queue: Queue where a process is deposited after was processed by I/O queue
+     */
     private _aux: Queue<T>;
-    private _inProcess: T;
-    private _inIoProcess: T;
+
+    /**
+     * I/O queue: Queue where a process is deposited after was in "inProcess" state and have Frames to be resolve
+     */
     private _io: Queue<T>;
+
+    /**
+     * Finish queue: Where process end
+     */
     private _finish: Queue<T>;
 
+    /** THREADS PROCESSED */
+
+    /**
+     * InProcess: A process on exec
+     */
+    private _inProcess: T;
+
+    /**
+     * InIOProcess: Where a process with I/O frame is shipped
+     */
+    private _inIoProcess: T;
+
+    /** COUNTERS */
+
+    /**
+     * Quantum: Units of time that CPU take for process something
+     */
     private _quantum: number;
+
+    /**
+     * Step: Auxiliar for make more readable the process
+     */
     private _step: number = 0;
+
+    /**
+     * Process Time: Time left for the process to finish its burst
+     */
     private _processTime: number;
+
+    /**
+     * IOProcessTime: Time left for the process I/O frame to finish its burst
+     */
     private _ioProcessTime: number;
 
-    constructor(quantum: number, newParam: Queue<T> = [], readyParam: Queue<T> = [], ioParam: Queue<T> = [], finishParam: Queue<T> = []) {
+    constructor(quantum: number, readyParam: Queue<T> = [], ioParam: Queue<T> = [], finishParam: Queue<T> = []) {
         this._processTime = this._quantum;
         this._quantum = quantum;
         this._ready = readyParam;
@@ -25,26 +69,44 @@ export class RrQueuesCollection<T extends Thread>  {
         this._finish = finishParam;
     }
 
+    /**
+     * Get actual step of processor
+     */
     public getStep(): number {
         return this._step;
     }
 
+    /**
+     * Upgrade the step
+     * @param amount 
+     */
     public stepUp(amount?: number) {
         this._step = amount ? this._step + amount : this._step + 1;
     }
 
-    public pushNewProcesses(...item: T[]): void {
+    /**
+     * Insert new process or threads to ready queue
+     * @param item 
+     */
+    public insertProcessToReadyQueue(...item: T[]): void {
         this._ready.push(...item);
     }
 
+    /**
+     * Set process to be processed
+     */
     public pushToInProcess(): void {
         this._inProcess = this._aux.length > 0
             ? this._aux.shift()
             : this._ready.shift();
+
         const timeRest = this._inProcess.getCloselyCpuTime();
         this._processTime = timeRest > this._quantum ? this._quantum : timeRest;
     }
 
+    /**
+     * Push the process to a I/O Queue
+     */
     public pushToIoQueue(): void {
         if (!this._inIoProcess) {
             this.pushToInIoProcess(this._inProcess);
@@ -53,11 +115,18 @@ export class RrQueuesCollection<T extends Thread>  {
         }
     }
 
+    /**
+     * Set process to be used on I/O
+     * @param item 
+     */
     private pushToInIoProcess(item: T): void {
         this._inIoProcess = item;
         this._ioProcessTime = this._inIoProcess.getCloselyIoTime();
     }
 
+    /**
+     * End process and send to respective queue, removing actual process
+     */
     public finishProcess(): void {
         if (this._inProcess.hasIoTime()) {
             this.pushToIoQueue();
@@ -70,17 +139,26 @@ export class RrQueuesCollection<T extends Thread>  {
         this._processTime = this._quantum;
     }
 
+    /**
+     * End process on I/O to be sent to AUX queue
+     */
     public finishIoProcess(): void {
         this._aux.push(this._inIoProcess);
         this._inIoProcess = null;
     }
 
+    /**
+     * Check if a process is under processing
+     */
     public hasInProcess() {
         return this._inProcess;
     }
 
+    /**
+     * Processing normal queues, using a CPU time with a specific quantum.
+     */
     public execProcessQueue() {
-        const idProcessed = this._inProcess?.getId();
+        const idProcessed = this._inProcess?.getPid();
         if (this._inProcess) {
             this._processTime--;
             this._inProcess.subtractCpuTime();
@@ -91,12 +169,15 @@ export class RrQueuesCollection<T extends Thread>  {
         return idProcessed;
     }
 
+    /**
+     * Processing IO queue, using a CPU time.
+     */
     public execIoQueue(): number {
         let idIoProcess: number;
         if (this._inIoProcess) {
             this._ioProcessTime--;
             this._inIoProcess.subtractIoTime();
-            idIoProcess = this._inIoProcess?.getId();
+            idIoProcess = this._inIoProcess?.getPid();
             if (this.ioProcessDone()) {
                 this.finishIoProcess();
             }
@@ -105,7 +186,7 @@ export class RrQueuesCollection<T extends Thread>  {
                 this.pushToInIoProcess(this._io.shift());
                 this._ioProcessTime--;
                 this._inIoProcess.subtractIoTime();
-                idIoProcess = this._inIoProcess?.getId();
+                idIoProcess = this._inIoProcess?.getPid();
                 if (this.ioProcessDone()) {
                     this.finishIoProcess();
                 }
@@ -114,15 +195,36 @@ export class RrQueuesCollection<T extends Thread>  {
         return idIoProcess;
     }
 
+    /**
+     * Check if a process id done
+     */
     public processDone(): boolean {
         return this._processTime <= 0;
     }
 
+    /**
+     * Check if queues are empty to finish the algorithm
+     */
+    public queuesProcessed(): boolean {
+        return !this.getReady().length
+            && !this.getAux().length
+            && !this.getInProcess()
+            && !this.getInIoProcess()
+            && !this.getIO().length
+            && this.getFinish().length > 0;
+    }
+
+    /**
+     * Check if a I/O frame is done
+     */
     public ioProcessDone(): boolean {
         return this._ioProcessTime <= 0;
     }
 
-    /** GETTERS AND SETTERS */
+    /**
+     * GENERAL GETTERS AND SETTERS
+     */
+
     public getReady(): Queue<T> {
         return this._ready;
     }
@@ -171,12 +273,4 @@ export class RrQueuesCollection<T extends Thread>  {
         this._finish = collection;
     }
 
-    public queuesProcessed(): boolean {
-        return !this.getReady().length
-            && !this.getAux().length
-            && !this.getInProcess()
-            && !this.getInIoProcess()
-            && !this.getIO().length
-            && this.getFinish().length > 0;
-    }
 }
