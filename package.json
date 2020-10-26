@@ -1,0 +1,10 @@
+{
+  "name": "vscode-typescript-debugging",
+  "version": "1.0.0",
+  "devDependencies": {},
+  "scripts": {
+    "start": "node out/app.js",
+    "prestart": "npm run build",
+    "build": "tsc"
+  }
+}

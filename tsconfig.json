@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "lib": ["es6", "dom"],
+        // "module": "commonjs",
+        "outDir": "./out",
+        "rootDir": "./src",
+        "sourceMap": true,
+        "moduleResolution": "node",
+        "target": "es5"
+    }
+}
