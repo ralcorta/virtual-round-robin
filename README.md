@@ -10,3 +10,23 @@ Round-Robin is a process scheduling algorithm that is simple to implement, withi
 ### Schema:
 
 ![alt text](https://github.com/ralcorta/virtual-round-robin/blob/main/assets/chart.png)
+
+
+### Prerequisites
+
+* TypeScript 3.7+
+* Node 8.10+
+
+
+### Installing
+
+You can install this project using npm on the root path:
+
+```
+$ npm install
+```
+
+```
+$ npm start
+```
+
