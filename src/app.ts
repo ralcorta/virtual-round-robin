@@ -1,6 +1,6 @@
 import { ProcessSymbolEnum } from "./enum/process-symbol.enum";
-import { RrQueuesCollection } from "./interfaces/rr-queue-collection";
-import { Thread } from "./interfaces/thread";
+import { RrQueuesCollection } from "./classes/rr-queue-collection";
+import { Thread } from "./classes/thread";
 import { ShowMtxFormat } from "./view/show-mtx";
 
 const quantum: number = 3;
