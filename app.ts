@@ -35,33 +35,10 @@ const threads: Array<ThreadTimed> = [
 ]
 
 /**
- * Make the matrix controller
+ * Execute the algorithm
  */
-const mtxFormat: ShowMtxFormat = new ShowMtxFormat();
-mtxFormat.initialize(threads.length);
+const mtxFormat: ShowMtxFormat = queues.exec(threads);
 
-/**
- * Initialize the algorithm
- */
-try {
-    while (!queues.queuesProcessed()) {
-        QueueInjector.checkThreadsToInsert(queues, threads);
-        const step = queues.getStep();
-
-        if (!queues.hasInProcess())
-            queues.pushToInProcess();
-
-        const idIo: number = queues.execIoQueue();
-        const idPorcess: number = queues.execProcessQueue();
-
-        mtxFormat.insertStringOnProcessPos(idPorcess, step, ProcessSymbolEnum.exec);
-        mtxFormat.insertStringOnProcessPos(idIo, step, ProcessSymbolEnum.io);
-
-        queues.stepUp();
-    }
-} catch (error) {
-    console.log(error);
-}
 /**
  * Clear the console from another compilation
  */

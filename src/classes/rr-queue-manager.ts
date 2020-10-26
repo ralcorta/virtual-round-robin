@@ -1,5 +1,9 @@
+import { ProcessSymbolEnum } from "../enum/process-symbol.enum";
+import { ShowMtxFormat } from "../view/show-mtx";
 import { Queue } from "./queue";
+import { QueueInjector } from "./queue-injector";
 import { Thread } from "./thread";
+import { ThreadTimed } from "./thread-timed";
 
 export class RrQueuesManager<T extends Thread>  {
     /** QUEUES */
@@ -67,6 +71,37 @@ export class RrQueuesManager<T extends Thread>  {
         this._inIoProcess = null;
         this._io = ioParam;
         this._finish = finishParam;
+    }
+
+    /**
+     * Execute the algorithm processing the queues
+     * @param threads
+     */
+    public exec(threads: Array<ThreadTimed>): ShowMtxFormat {
+        const mtxFormat: ShowMtxFormat = new ShowMtxFormat();
+        mtxFormat.initialize(threads.length);
+
+        try {
+            while (!this.queuesProcessed()) {
+                QueueInjector.checkThreadsToInsert(this, threads);
+                const step = this.getStep();
+
+                if (!this.hasInProcess())
+                    this.pushToInProcess();
+
+                const idIo: number = this.execIoQueue();
+                const idPorcess: number = this.execProcessQueue();
+
+                mtxFormat.insertStringOnProcessPos(idPorcess, step, ProcessSymbolEnum.exec);
+                mtxFormat.insertStringOnProcessPos(idIo, step, ProcessSymbolEnum.io);
+
+                this.stepUp();
+            }
+        } catch (error) {
+            console.log(error);
+        }
+
+        return mtxFormat;
     }
 
     /**
