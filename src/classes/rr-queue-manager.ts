@@ -146,8 +146,10 @@ export class RrQueuesManager<T extends Thread>  {
             ? this._aux.shift()
             : this._ready.shift();
 
-        const timeRest = this._inProcess.getCloselyCpuTime();
-        this._processTime = timeRest > this._quantum ? this._quantum : timeRest;
+        if (this._inProcess) {
+            const timeRest = this._inProcess.getCloselyCpuTime();
+            this._processTime = timeRest > this._quantum ? this._quantum : timeRest;
+        }
     }
 
     /**
