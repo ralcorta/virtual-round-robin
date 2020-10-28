@@ -1,5 +1,6 @@
 import { ProcessSymbolEnum } from "../enum/process-symbol.enum";
 import { ShowMtxFormat } from "../view/show-mtx";
+import { RRQueueManagerValidatorError } from "./exceptions";
 import { Queue } from "./queue";
 import { QueueInjector } from "./queue-injector";
 import { Thread } from "./thread";
@@ -63,15 +64,15 @@ export class RrQueuesManager<T extends Thread>  {
      */
     private _ioProcessTime: number;
 
-    constructor(quantum: number, readyParam: Queue<T> = [], ioParam: Queue<T> = [], finishParam: Queue<T> = []) {
-        this._processTime = this._quantum;
+    constructor(quantum: number, readyParam?: Queue<T>, ioParam?: Queue<T>, finishParam?: Queue<T>) {
         this._quantum = quantum;
-        this._ready = readyParam;
+        this._processTime = this._quantum;
         this._aux = new Queue<T>();
         this._inProcess = null;
         this._inIoProcess = null;
-        this._io = ioParam;
-        this._finish = finishParam;
+        this._ready = readyParam ?? Queue.create();
+        this._io = ioParam ?? Queue.create();
+        this._finish = finishParam ?? Queue.create();
     }
 
     /**
@@ -108,7 +109,7 @@ export class RrQueuesManager<T extends Thread>  {
                 this.stepUp();
             }
         } catch (error) {
-            console.log(error);
+            throw new RRQueueManagerValidatorError(error.message);
         }
 
         return mtxFormat;

@@ -1,3 +1,4 @@
+import { ThreadValidatorError } from "./exceptions";
 import { Thread } from "./thread";
 import { ThreadTimed } from "./thread-timed";
 
@@ -6,8 +7,6 @@ enum ErrorThreadValidatorEnum {
     pidValidator = 'Pids repeted',
     cpuNegativeValidator = 'CPUs values negative',
 }
-
-export class ThreadValidatorError extends Error { }
 
 export class ThreadValidator {
 
