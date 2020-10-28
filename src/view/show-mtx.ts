@@ -39,9 +39,9 @@ export class ShowMtxFormat {
         }
     }
 
-    public insertStringOnProcessPos(idProcess: number, step: number, word: string): void {
-        if (idProcess)
-            this._mtx[idProcess - 1][step] = word;
+    public insertStringOnProcessPos(processPos: number, step: number, word: string): void {
+        if (processPos > -1)
+            this._mtx[processPos][step] = word;
     }
 
     public initialize(threads: Array<ThreadTimed>): void {

@@ -4,6 +4,7 @@ import { Queue } from "./queue";
 import { QueueInjector } from "./queue-injector";
 import { Thread } from "./thread";
 import { ThreadTimed } from "./thread-timed";
+import { ThreadValidator } from "./thread-validator";
 
 export class RrQueuesManager<T extends Thread>  {
     /** QUEUES */
@@ -78,6 +79,12 @@ export class RrQueuesManager<T extends Thread>  {
      * @param threads
      */
     public exec(threads: Array<ThreadTimed>): ShowMtxFormat {
+        try {
+            ThreadValidator.threadTimedListValidator(threads)
+        } catch (error) {
+            throw error;
+        }
+
         const mtxFormat: ShowMtxFormat = new ShowMtxFormat();
         mtxFormat.initialize(threads);
 
@@ -89,11 +96,14 @@ export class RrQueuesManager<T extends Thread>  {
                 if (!this.hasInProcess())
                     this.pushToInProcess();
 
-                const idIo: number = this.execIoQueue();
-                const idPorcess: number = this.execProcessQueue();
+                const pidIo: number = this.execIoQueue();
+                const pidPorcess: number = this.execProcessQueue();
 
-                mtxFormat.insertStringOnProcessPos(idPorcess, step, ProcessSymbolEnum.exec);
-                mtxFormat.insertStringOnProcessPos(idIo, step, ProcessSymbolEnum.io);
+                const pidIOProcessPos: number = threads.findIndex(t => t.thread.getPid() == pidIo);
+                const pidProcessPos: number = threads.findIndex(t => t.thread.getPid() == pidPorcess);
+
+                mtxFormat.insertStringOnProcessPos(pidProcessPos, step, ProcessSymbolEnum.exec);
+                mtxFormat.insertStringOnProcessPos(pidIOProcessPos, step, ProcessSymbolEnum.io);
 
                 this.stepUp();
             }

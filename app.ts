@@ -19,15 +19,11 @@ const queues: RrQueuesManager<Thread> = new RrQueuesManager<Thread>(quantum);
 /**
  * Instance the diferents therads where the RR needs to work
  */
-const thread1: Thread = new Thread(1, "Thread #1", [3, 2], [4]);
-const thread2: Thread = new Thread(2, "Thread #2", [1, 3], [1]);
-const thread3: Thread = new Thread(3, "Thread #3", [2, 3], [1]);
-const thread4: Thread = new Thread(4, "Thread #4", [6, 4], [1]);
 
-// const thread1: Thread = new Thread(532, "Thread #1", [3, 2], [4]);
-// const thread2: Thread = new Thread(1256, "Thread #2", [1, 3], [1]);
-// const thread3: Thread = new Thread(436, "Thread #3", [2, 3], [1]);
-// const thread4: Thread = new Thread(46834, "Thread #4", [6, 4], [1]);
+const thread1: Thread = new Thread(5325, "Thread #1", [3, 2], [4]);
+const thread2: Thread = new Thread(1256, "Thread #2", [1, 3], [1]);
+const thread3: Thread = new Thread(4365, "Thread #3", [2, 3], [1]);
+const thread4: Thread = new Thread(4683, "Thread #4", [6, 4], [1]);
 
 /**
  * Generate the array for thread insertion by arrival time
