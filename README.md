@@ -9,7 +9,7 @@ Round-Robin is a process scheduling algorithm that is simple to implement, withi
 
 ### Schema:
 
-![alt text](https://github.com/ralcorta/virtual-round-robin/blob/main/assets/chart.png)
+![alt text](https://github.com/ralcorta/virtual-round-robin/blob/main/assets/chart.jpeg)
 
 
 ### Prerequisites
