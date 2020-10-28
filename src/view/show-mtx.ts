@@ -1,9 +1,14 @@
+import { ThreadTimed } from "../classes/thread-timed";
+import { ProcessSymbolEnum } from "../enum/process-symbol.enum";
+
 export class ShowMtxFormat {
     private _mtx: Array<string[]>;
+    private _threads: Array<ThreadTimed>;
     private _blank: string;
+
     constructor(mtx?: Array<string[]>, blankSpace?: string) {
         this._mtx = mtx ?? new Array<string[]>();
-        this._blank = blankSpace ?? "_";
+        this._blank = blankSpace ?? ProcessSymbolEnum.empty;
     }
 
     private sanitization(): Array<string[]> {
@@ -29,8 +34,8 @@ export class ShowMtxFormat {
 
     public print(): void {
         const mtx = this.sanitization();
-        for (let i = 0; i < this._mtx.length; i++) {
-            console.log(...mtx[i])
+        for (let i = 0; i < this._threads.length; i++) {
+            console.log("Process:", this._threads[i].thread.getPid(), ": ", ...mtx[i])
         }
     }
 
@@ -39,8 +44,9 @@ export class ShowMtxFormat {
             this._mtx[idProcess - 1][step] = word;
     }
 
-    public initialize(amountOfProcess: number): void {
-        for (let i = 0; i < amountOfProcess; i++) {
+    public initialize(threads: Array<ThreadTimed>): void {
+        this._threads = threads;
+        for (let i = 0; i < threads.length; i++) {
             this._mtx.push([]);
         }
     }

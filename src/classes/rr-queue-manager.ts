@@ -79,7 +79,7 @@ export class RrQueuesManager<T extends Thread>  {
      */
     public exec(threads: Array<ThreadTimed>): ShowMtxFormat {
         const mtxFormat: ShowMtxFormat = new ShowMtxFormat();
-        mtxFormat.initialize(threads.length);
+        mtxFormat.initialize(threads);
 
         try {
             while (!this.queuesProcessed()) {
@@ -195,37 +195,49 @@ export class RrQueuesManager<T extends Thread>  {
     public execProcessQueue() {
         const idProcessed = this._inProcess?.getPid();
         if (this._inProcess) {
-            this._processTime--;
-            this._inProcess.subtractCpuTime();
-            if (this.processDone()) {
-                this.finishProcess();
-            }
+            this.execActualProcess();
         }
         return idProcessed;
     }
 
     /**
-     * Processing IO queue, using a CPU time.
+     * Execute actual process in CPU
+     */
+    private execActualProcess(): void {
+        this._processTime--;
+        this._inProcess.subtractCpuTime();
+        if (this.processDone()) {
+            this.finishProcess();
+        }
+    }
+
+    /**
+     * Processing IO queue, using a CPU time
      */
     public execIoQueue(): number {
         let idIoProcess: number;
+
         if (this._inIoProcess) {
-            this._ioProcessTime--;
-            this._inIoProcess.subtractIoTime();
-            idIoProcess = this._inIoProcess?.getPid();
-            if (this.ioProcessDone()) {
-                this.finishIoProcess();
-            }
+            idIoProcess = this.execActualIOProcess();
         } else {
             if (this._io.length) {
                 this.pushToInIoProcess(this._io.shift());
-                this._ioProcessTime--;
-                this._inIoProcess.subtractIoTime();
-                idIoProcess = this._inIoProcess?.getPid();
-                if (this.ioProcessDone()) {
-                    this.finishIoProcess();
-                }
+                idIoProcess = this.execActualIOProcess();
             }
+        }
+
+        return idIoProcess;
+    }
+
+    /**
+     * Execute Process on I/O
+     */
+    private execActualIOProcess(): number {
+        const idIoProcess: number = this._inIoProcess?.getPid();
+        this._ioProcessTime--;
+        this._inIoProcess.subtractIoTime();
+        if (this.ioProcessDone()) {
+            this.finishIoProcess();
         }
         return idIoProcess;
     }

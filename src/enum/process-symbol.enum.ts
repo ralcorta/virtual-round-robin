@@ -4,5 +4,6 @@
  */
 export enum ProcessSymbolEnum {
     exec = 'X',
-    io = 'I'
+    io = 'I',
+    empty = '_'
 }
