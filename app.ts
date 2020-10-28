@@ -30,9 +30,9 @@ const thread4: Thread = new Thread(4683, "Thread #4", [6, 4], [1]);
  */
 const threads: Array<ThreadTimed> = [
     new ThreadTimed(0, thread1),
-    new ThreadTimed(2, thread2),
-    new ThreadTimed(3, thread3),
-    new ThreadTimed(4, thread4),
+    new ThreadTimed(1, thread2),
+    new ThreadTimed(2, thread3),
+    new ThreadTimed(3, thread4),
 ]
 
 /**

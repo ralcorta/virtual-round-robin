@@ -8,6 +8,19 @@ import { ThreadTimed } from "./thread-timed";
 import { ThreadValidator } from "./thread-validator";
 
 export class RrQueuesManager<T extends Thread>  {
+
+    /** THREADS */
+
+    /**
+     * Threads with time to execute
+     */
+    private _threadsTimed: Array<ThreadTimed>;
+
+    /**
+     * Last moment when thread is inserted to ready queue
+     */
+    private _lastThreadTime: number;
+
     /** QUEUES */
 
     /**
@@ -30,6 +43,8 @@ export class RrQueuesManager<T extends Thread>  {
      */
     private _finish: Queue<T>;
 
+
+
     /** THREADS PROCESSED */
 
     /**
@@ -41,6 +56,8 @@ export class RrQueuesManager<T extends Thread>  {
      * InIOProcess: Where a process with I/O frame is shipped
      */
     private _inIoProcess: T;
+
+
 
     /** COUNTERS */
 
@@ -80,19 +97,24 @@ export class RrQueuesManager<T extends Thread>  {
      * @param threads
      */
     public exec(threads: Array<ThreadTimed>): ShowMtxFormat {
+        this._threadsTimed = threads;
+        this._lastThreadTime = this.getLastThreadToExecute(threads);
+
         try {
-            ThreadValidator.threadTimedListValidator(threads)
+            ThreadValidator.threadTimedListValidator(this._threadsTimed)
         } catch (error) {
             throw error;
         }
 
         const mtxFormat: ShowMtxFormat = new ShowMtxFormat();
-        mtxFormat.initialize(threads);
+        mtxFormat.initialize(this._threadsTimed);
 
         try {
-            while (!this.queuesProcessed()) {
-                QueueInjector.checkThreadsToInsert(this, threads);
+            while (!this.queuesProcessed() || this.processesRemain()) {
+                QueueInjector.checkThreadsToInsert(this);
                 const step = this.getStep();
+                let pidIOProcessPos: number = null;
+                let pidProcessPos: number = null;
 
                 if (!this.hasInProcess())
                     this.pushToInProcess();
@@ -100,8 +122,8 @@ export class RrQueuesManager<T extends Thread>  {
                 const pidIo: number = this.execIoQueue();
                 const pidPorcess: number = this.execProcessQueue();
 
-                const pidIOProcessPos: number = threads.findIndex(t => t.thread.getPid() == pidIo);
-                const pidProcessPos: number = threads.findIndex(t => t.thread.getPid() == pidPorcess);
+                pidIOProcessPos = threads.findIndex(t => t.thread.getPid() == pidIo);
+                pidProcessPos = threads.findIndex(t => t.thread.getPid() == pidPorcess);
 
                 mtxFormat.insertStringOnProcessPos(pidProcessPos, step, ProcessSymbolEnum.exec);
                 mtxFormat.insertStringOnProcessPos(pidIOProcessPos, step, ProcessSymbolEnum.io);
@@ -113,6 +135,14 @@ export class RrQueuesManager<T extends Thread>  {
         }
 
         return mtxFormat;
+    }
+
+    /**
+     * Get last thread moment
+     * @param threadsTimed 
+     */
+    private getLastThreadToExecute(threadsTimed: Array<ThreadTimed>): number {
+        return threadsTimed.reduce((prev, curr) => curr.moment > prev.moment ? curr : prev).moment
     }
 
     /**
@@ -263,6 +293,13 @@ export class RrQueuesManager<T extends Thread>  {
     }
 
     /**
+     * Check if are process remain to execute
+     */
+    private processesRemain(): boolean {
+        return this._lastThreadTime >= this.getStep()
+    }
+
+    /**
      * Check if queues are empty to finish the algorithm
      */
     public queuesProcessed(): boolean {
@@ -284,6 +321,10 @@ export class RrQueuesManager<T extends Thread>  {
     /**
      * GENERAL GETTERS AND SETTERS
      */
+
+    public getThreadsTimed(): Array<ThreadTimed> {
+        return this._threadsTimed;
+    }
 
     public getReady(): Queue<T> {
         return this._ready;
