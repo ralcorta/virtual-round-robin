@@ -34,9 +34,14 @@ export class ShowMtxFormat {
 
     public print(): void {
         const mtx = this.sanitization();
+        const table = [];
         for (let i = 0; i < this._threads.length; i++) {
-            console.log("Process:", this._threads[i].thread.getPid(), ": ", ...mtx[i])
+            table.push({
+                "Process #": this._threads[i].thread.getPid(),
+                ...this._mtx[i],
+            });
         }
+        console.table(table);
     }
 
     public insertStringOnProcessPos(processPos: number, step: number, word: string): void {

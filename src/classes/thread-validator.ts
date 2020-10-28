@@ -1,12 +1,7 @@
+import { ErrorThreadValidatorEnum } from "../enum/process-symbol.enum";
 import { ThreadValidatorError } from "./exceptions";
 import { Thread } from "./thread";
 import { ThreadTimed } from "./thread-timed";
-
-enum ErrorThreadValidatorEnum {
-    timeValidator = 'Times invalid',
-    pidValidator = 'Pids repeted',
-    cpuNegativeValidator = 'CPUs values negative',
-}
 
 export class ThreadValidator {
 

@@ -5,5 +5,11 @@
 export enum ProcessSymbolEnum {
     exec = 'X',
     io = 'I',
-    empty = '_'
+    empty = ' '
+}
+
+export enum ErrorThreadValidatorEnum {
+    timeValidator = 'Times invalid',
+    pidValidator = 'Pids repeted',
+    cpuNegativeValidator = 'CPUs values negative',
 }
